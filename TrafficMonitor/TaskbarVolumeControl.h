@@ -22,8 +22,15 @@ public:
         ini.Save();
     }
 
-    // Accumulates high-resolution wheel deltas and emits one native Windows
-    // volume media-key press for each complete WHEEL_DELTA step.
+    // Accumulates high-resolution wheel deltas and emits one Windows shell
+    // application command for each complete WHEEL_DELTA step.
+    //
+    // WM_APPCOMMAND is deliberately sent to TrafficMonitor's own top-level
+    // window rather than to the current foreground window. If the application
+    // does not handle the command, DefWindowProc forwards it to the Windows
+    // shell hook (HSHELL_APPCOMMAND). This avoids SendInput and therefore does
+    // not depend on the integrity level of the current foreground process.
+    //
     // Returns true whenever the feature is enabled, meaning the wheel message
     // should be consumed by the TrafficMonitor taskbar window.
     static bool HandleMouseWheel(short zDelta, int& accumulated_delta)
@@ -52,16 +59,16 @@ public:
 
         accumulated_delta -= steps * WHEEL_DELTA;
 
-        const WORD volume_key = steps > 0 ? VK_VOLUME_UP : VK_VOLUME_DOWN;
+        const int app_command = steps > 0 ? APPCOMMAND_VOLUME_UP : APPCOMMAND_VOLUME_DOWN;
         int step_count = steps > 0 ? steps : -steps;
 
         // zDelta is a short, so this is mainly a guard against malformed input
-        // causing an excessive burst of synthetic key events.
+        // causing an excessive burst of shell application commands.
         if (step_count > 16)
             step_count = 16;
 
         for (int i = 0; i < step_count; ++i)
-            SendVolumeKey(volume_key);
+            SendVolumeAppCommand(app_command);
 
         return true;
     }
@@ -79,17 +86,18 @@ private:
         return ini.GetBool(L"task_bar", L"volume_control_by_mouse_wheel", false);
     }
 
-    static bool SendVolumeKey(WORD virtual_key)
+    static bool SendVolumeAppCommand(int app_command)
     {
-        INPUT input[2]{};
+        CWnd* main_window = AfxGetMainWnd();
+        if (main_window == nullptr)
+            return false;
 
-        input[0].type = INPUT_KEYBOARD;
-        input[0].ki.wVk = virtual_key;
+        HWND hwnd = main_window->GetSafeHwnd();
+        if (hwnd == nullptr || !::IsWindow(hwnd))
+            return false;
 
-        input[1].type = INPUT_KEYBOARD;
-        input[1].ki.wVk = virtual_key;
-        input[1].ki.dwFlags = KEYEVENTF_KEYUP;
-
-        return ::SendInput(2, input, sizeof(INPUT)) == 2;
+        const LPARAM command_lparam = static_cast<LPARAM>(app_command) << 16;
+        ::SendMessage(hwnd, WM_APPCOMMAND, reinterpret_cast<WPARAM>(hwnd), command_lparam);
+        return true;
     }
 };
