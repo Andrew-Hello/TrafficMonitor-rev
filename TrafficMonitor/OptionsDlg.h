@@ -9,6 +9,7 @@
 // COptionsDlg 对话框
 
 #define OPTION_DLG_NAME _T("OptionsDlg")
+#define IDC_TASKBAR_VOLUME_WHEEL_DYNAMIC 0x7F10
 
 class COptionsDlg : public CBaseDialog
 {
@@ -32,6 +33,10 @@ protected:
     int m_tab_selected;
     std::vector<CTabDlg*> m_tab_vect;
     std::vector<int> m_tab_height;
+    CButton m_taskbar_volume_wheel_check;
+
+    void CreateTaskbarVolumeWheelCheck();
+    void SaveTaskbarVolumeWheelSetting();
 
     virtual CString GetDialogName() const override;
     virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV 支持
