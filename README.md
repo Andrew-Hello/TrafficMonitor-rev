@@ -1,139 +1,105 @@
-**简体中文 | [English](./README_en-us.md)**
+# TrafficMonitor-rev
 
-[![Badge](https://img.shields.io/badge/link-996.icu-%23FF4D5B.svg?style=flat-square)](https://996.icu/#/en_US)
-[![LICENSE](https://img.shields.io/badge/license-Anti%20996-blue.svg?style=flat-square)](https://github.com/996icu/996.ICU/blob/master/LICENSE)
-[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/zhongyang219/TrafficMonitor/main.yml?branch=master&label=Release%20CI&logo=github&style=flat-square)](https://github.com/zhongyang219/TrafficMonitor/actions?query=workflow:"Release+CI")
-[![GitHub release](https://img.shields.io/github/release/zhongyang219/TrafficMonitor.svg?style=flat-square)](https://github.com/zhongyang219/TrafficMonitor/releases/latest)
+[![Release CI](https://img.shields.io/github/actions/workflow/status/Andrew-Hello/TrafficMonitor-rev/main.yml?branch=master&label=Release%20CI&logo=github&style=flat-square)](https://github.com/Andrew-Hello/TrafficMonitor-rev/actions/workflows/main.yml)
+[![GitHub release](https://img.shields.io/github/v/release/Andrew-Hello/TrafficMonitor-rev?style=flat-square)](https://github.com/Andrew-Hello/TrafficMonitor-rev/releases/latest)
+[![LICENSE](https://img.shields.io/badge/license-Anti%20996-blue.svg?style=flat-square)](./LICENSE)
 
-<a href="https://hellogithub.com/repository/5ef48af2b2794d4798b17d6539ec7305" target="_blank"><img src="https://api.hellogithub.com/v1/widgets/recommend.svg?rid=5ef48af2b2794d4798b17d6539ec7305&claim_uid=CeVqou2T1dIvfQP" alt="Featured｜HelloGitHub" style="width: 250px; height: 54px;" width="250" height="54" /></a>
+TrafficMonitor-rev 是基于 [zhongyang219/TrafficMonitor](https://github.com/zhongyang219/TrafficMonitor) 的增强分支，保留原版轻量、直观的任务栏资源监控体验，并针对日常 Windows 桌面使用增加经过实际测试的交互增强。
 
-# TrafficMonitor 简介
+## 下载
 
-Traffic Monitor是一款用于Windows平台的网速监控悬浮窗软件，可以显示当前网速、CPU及内存利用率，支持嵌入到任务栏显示，支持更换皮肤、历史流量统计等功能。
+**[前往 Releases 下载最新版本](https://github.com/Andrew-Hello/TrafficMonitor-rev/releases/latest)**
 
-# 相关链接：
+当前 Release 提供 Lite 构建：
 
-请[点击此处](https://github.com/zhongyang219/TrafficMonitor/releases/latest)下载TrafficMonitor的最新版本。
+- x64：适用于绝大多数 64 位 Windows PC
+- x86：适用于 32 位环境或兼容需求
+- ARM64EC：适用于 Windows on ARM
 
-备用链接：[百度网盘下载](https://pan.baidu.com/s/15PMt7s-ASpyDwtS__4cUhg) 提取码：`ou0m`
+Lite 版无需管理员权限即可正常运行，推荐日常使用时保持普通用户权限运行。
 
-国内用户如果遇到Github下载缓慢的问题，可以[点击此处](https://gitee.com/zhongyang219/TrafficMonitor)转到此项目在Gitee上的页面。
+## 本分支增强功能
 
-如果遇到问题，请[点击此处](./Help.md)查看常见问题。
+### 任务栏鼠标滚轮调节系统音量
 
-你也可以[点击此处](https://github.com/zhongyang219/TrafficMonitor/actions?query=workflow:"Release+CI")下载TrafficMonitor的预发行构建版本。
+当鼠标指针位于 **TrafficMonitor 自己的任务栏显示窗口** 上时，可使用鼠标滚轮直接调节 Windows 系统音量。
 
-从1.80版本开始，TrafficMonitor加入了温度监控功能，如果你不需要温度监控功能，并且在使用1.80以上版本中遇到了问题，建议下载不含温度监控的版本（Lite版本）。（在Release页面找到文件名包含`Lite`的版本。）
+特点：
 
-TrafficMonitor依赖于Microsoft Visual C++ 运行环境，如果程序启动时提示“找不到MSVC*.dll”，请点击以下链接下载并安装Microsoft Visual C++ 运行环境。
+- 功能默认关闭，可在任务栏相关设置中启用“鼠标滚轮调节系统音量”。
+- 仅 TrafficMonitor 自己的任务栏窗口响应，不监听任务栏其它区域。
+- 不使用全局鼠标 Hook，不向 Explorer 注入代码，不修改系统进程。
+- 保留插件优先级：插件项目如果主动消费滚轮事件，则不会同时改变系统音量。
+- 支持高精度滚轮/触控板滚轮增量累计，避免小增量输入丢失。
+- 使用 Windows 原生 `WM_APPCOMMAND` / `APPCOMMAND_VOLUME_UP` / `APPCOMMAND_VOLUME_DOWN` 路径，不依赖 `SendInput` 模拟键盘输入。
+- 因此 TrafficMonitor 以普通权限运行时，即使当前前台窗口是管理员权限程序（例如提升权限的任务管理器），仍可正常调节系统音量。
+- 保留 Windows 原生系统音量处理体验。
 
-[最新支持的 Visual C++ 可再发行程序包下载 | Microsoft Docs](https://docs.microsoft.com/zh-CN/cpp/windows/latest-supported-vc-redist?view=msvc-170)
+> 推荐让 TrafficMonitor 以普通用户权限运行。任务栏音量控制不需要为了兼容管理员前台窗口而提升整个 TrafficMonitor 进程的权限。
 
-# 版本说明
+## TrafficMonitor 原有功能
 
-TrafficMonitor提供了标准版和Lite版两种版本可用。标准版包含了所有的功能，Lite版本则不包含温度监控、显卡利用率、硬盘利用率等硬件监控功能。标准版运行需要管理员权限，而Lite版本则不需要。
+- 显示当前网络上传、下载速度
+- CPU、内存、CPU 频率、显卡及硬盘利用率监控
+- 支持多网卡自动或手动选择
+- 支持嵌入 Windows 任务栏显示
+- 支持主窗口皮肤和自定义皮肤
+- 历史流量统计
+- 网络详细信息
+- 插件系统
+- 支持多显示器及任务栏显示
 
-如果没有监控温度等硬件信息的需要，建议使用Lite版。
+## 基本使用
 
-以下是两个版本功能对比。
+程序启动后会显示网速监控悬浮窗。在悬浮窗或通知区图标的右键菜单中可以进入相关设置。
 
-| 功能                          | 标准版 | Lite版 |
-| ----------------------------- | ------ | ------ |
-| 网速监控                      | ✔      | ✔      |
-| CPU、内存利用率          | ✔      | ✔      |
-| CPU、显卡、硬盘、主板温度监控  | ✔      | ❌      |
-| CPU频率监控 | ✔ | ✔ |
-| 显卡利用率监控                | ✔      | ✔     |
-| 硬盘利用率监控                | ✔      | ✔     |
-| 网络详细信息                  | ✔      | ✔      |
-| 插件系统                      | ✔      | ✔      |
-| 主窗口更换皮肤                | ✔      | ✔      |
-| 需要管理员权限                | 是     | 否     |
-
-注：从1.86版本开始，TrafficMonitor Lite版也提供了显卡和硬盘利用率监控功能，相比标准版仅少了温度监控功能。后续TrafficMonitor中的温度监控功能将不再维护，TrafficMonitor将不再提供标准版，仅提供Lite版。温度监控功能已经迁移到了[硬件监控插件](https://github.com/zhongyang219/TrafficMonitorPlugins/blob/main/download/plugin_download.md#%E7%A1%AC%E4%BB%B6%E7%9B%91%E6%8E%A7%E6%8F%92%E4%BB%B6)，如果需要使用温度监控功能，请下载硬件监控插件。
-
-# 主要特性
-
-* 显示当前实现网络传输速率、CPU和内存占用率
-* 如果电脑有多个网卡，支持自动和手动选择网络连接
-* 查看网络详细信息
-* 支持嵌入到任务栏显示
-* 支持更换皮肤和自定义皮肤
-* 历史流量统计
-* 硬件信息监控
-* 插件系统
-# 使用说明
-
-**[点击这里](https://github.com/zhongyang219/TrafficMonitor/wiki)转到Wiki页面查看关于TrafficMonitor的详细说明文档。**
-
-# 截图
-
-主悬浮窗：
-![](./Screenshots/main1.png)
-
-右键菜单：
-![](./Screenshots/main.png)
+若需要将信息显示到任务栏，请启用“显示任务栏窗口”。任务栏窗口支持自定义显示项目、字体、颜色、宽度等属性。
 
 任务栏窗口：
 
 ![](./Screenshots/taskbar.PNG)
 
-多彩皮肤：
+主悬浮窗：
+
+![](./Screenshots/main1.png)
+
+皮肤：
+
 <img src="./Screenshots/skins.PNG" style="zoom:80%;" />
 
-# 如何使用
-程序启动后在会在屏幕中显示一个显示网速的悬浮窗。在悬浮窗上点击鼠标右键可以弹出右键菜单。
+## 任务栏音量控制的设计原则
 
-TrafficMonitor支持将信息显示到任务栏。但是TrafficMonitor默认只显示主窗口（悬浮窗），如果需要让它嵌入到任务栏显示，请在右键菜单中选择“显示任务栏窗口”命令。
+这一功能刻意保持低侵入：滚轮消息只由 TrafficMonitor 自己已经存在的任务栏窗口处理，不扩展到 Windows 系统任务栏区域，也不为了实现类似第三方任务栏增强工具的全局行为而注入 Explorer。
 
-任务栏窗口支持自定义显示项目，默认情况下只显示网速，如果需要显示CPU和内存利用率等其他信息，请在任务栏窗口右键菜单中选择“显示设置”，在弹出的“显示设置”对话框中勾选需要显示的项目，如下图所示：
+音量调整通过 Windows Shell 的应用命令机制完成。相比通过 `SendInput` 模拟 `VK_VOLUME_UP` / `VK_VOLUME_DOWN`，该实现不会因为普通权限 TrafficMonitor 与高完整性级别前台窗口之间的 UIPI 限制而失效。
 
-<img src="./Screenshots/taskbar_item_settings.png" style="zoom:80%;" />
+## 版本说明
 
-# 自定义皮肤
-<img src="./Screenshots/selecte_skin.png" style="zoom:80%;" />
+本仓库目前以 **Lite** 方案作为主要构建和发布目标。Lite 版不依赖 TrafficMonitor 旧版内置的温度监控组件，因此无需管理员权限，更适合作为长期常驻任务栏程序使用。
 
-在主窗口或通知区图标右键菜单上选择“其他功能”——“更换皮肤”可以打开更换皮肤界面。[点击此处](https://github.com/zhongyang219/TrafficMonitorSkin/blob/master/皮肤下载.md)可以下载更多皮肤。用户还可以根据自己的需要编辑自己的皮肤。
+如果需要温度监控，可参考上游项目的硬件监控插件方案：
+[TrafficMonitorPlugins](https://github.com/zhongyang219/TrafficMonitorPlugins)
 
-皮肤文件放在程序所在目录的`skins`目录下，每个皮肤被放到单独的文件夹下，文件夹的名称就是皮肤的名称。
+## 编译
 
-其中`background.bmp`和`background_l.bmp`是背景图片，`skin.ini`是皮肤的配置文件，可以通过`skin.ini`指定文本颜色、字体、皮肤作者、每个项目的大小和位置等信息。
+项目使用 Visual Studio / MSBuild 构建。GitHub Actions 正式构建环境固定为 **Windows Server 2022 + Visual Studio 2022 / v143 + MFC**，并编译：
 
-从1.80版本开始增加了xml格式的皮肤配置文件`skin.xml`，只有xml格式的皮肤配置文件才支持温度和显卡使用率显示。
+- `Release (lite) | x64`
+- `Release (lite) | x86`
+- `Release (lite) | ARM64EC`
 
-从1.85版本开始增加了对png格式背景图片的支持，你可以使用png格式来制作带透明背景的皮肤，背景图片的文件名为`background.png`和`background_l.png`。
+解决方案：`TrafficMonitor_Lite.sln`
 
-详细的皮肤制作教程请点击以下链接：
+## 上游项目与文档
 
-[皮肤制作教程 · zhongyang219/TrafficMonitor Wiki (github.com)](https://github.com/zhongyang219/TrafficMonitor/wiki/皮肤制作教程)
+本项目基于原版 TrafficMonitor 开发，原项目及完整 Wiki 文档：
 
-# 选项设置
-<img src="./Screenshots/option.jpg" style="zoom:80%;" />
+- [zhongyang219/TrafficMonitor](https://github.com/zhongyang219/TrafficMonitor)
+- [TrafficMonitor Wiki](https://github.com/zhongyang219/TrafficMonitor/wiki)
+- [插件开发指南](https://github.com/zhongyang219/TrafficMonitor/wiki/插件开发指南)
+- [本仓库 Help.md](./Help.md)
+- [原版更新日志](./UpdateLog/update_log.md)
 
-在右键菜单选择“选项...”可以进入选项设置。在选项设置对话框中，可以单独设置主窗口和任务栏窗口的文本颜色、字体、背景颜色、网速单位、显示的文本等。
+## License
 
-在“常规设置”选项卡中，可以设置是否在程序时自动检查更新，以及是否需要在开机是自动运行。可以设置在什么时候需要发出消息通知。
-
-从1.72版本开始，支持每个项目文本颜色单独设置。勾选“指定每个项目的颜色”后，点击“文本颜色”右边的颜色框，会弹出详细颜色设置的对话框，可以在这里单独指定每个项目的颜色。
-
-# 插件系统
-
-从1.82版本开始增加了插件系统，插件dll必须放在“TrafficMonitor.exe”同级目录的“plugins”目录下。程序启动后，插件会自动加载。你可以在右键菜单“更多功能”——“插件管理”中查看并管理已加载的插件。
-
-关于如何开发TrafficMonitor的说明，请参见[插件开发指南 · zhongyang219/TrafficMonitor Wiki (github.com)](https://github.com/zhongyang219/TrafficMonitor/wiki/插件开发指南)。
-
-要下载TrafficMonitor插件，请[点击这里](https://github.com/zhongyang219/TrafficMonitorPlugins/blob/main/download/plugin_download.md)。
-
-# 关于硬件监控功能
-
-从1.80版本开始，TrafficMonitor加入了硬件监控功能（包括温度监控和显卡使用率监控、CPU频率监控），它使用了第三方开源库[LibreHardwareMonitor](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor)。如果你在使用温度监控功能时遇到了问题，请[点击这里](./Help.md#13-关于trafficmonitor温度监控的问题)。
-
-需要注意的是，温度监控功能默认是关闭的，如果你要使用TrafficMonitor的温度监控功能，请到[“选项设置”-“常规设置”-“硬件监控”](https://github.com/zhongyang219/TrafficMonitor/wiki/选项设置#硬件监控)中开启。
-
-**注意：硬件监控功能（包括温度监控和显卡使用率监控）可能存在一些问题，它可能会占用更多的CPU和内存。据部分用户反馈，开启温度功能后会导致程序崩溃和系统死机等问题，请在知晓以上风险后再决定开启硬件监控功能。否则，请不要使用硬件监控功能。**
-
-
-
-# 更新日志
-
-**[点击此处查看更新日志](./UpdateLog/update_log.md)**
+本 fork 延续上游项目的许可证要求，详见 [LICENSE](./LICENSE) 与 [LICENSE_CN](./LICENSE_CN)。
