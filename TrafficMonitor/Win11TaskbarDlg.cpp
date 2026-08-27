@@ -1,6 +1,39 @@
 ﻿#include "stdafx.h"
 #include "Win11TaskbarDlg.h"
 #include "WindowsSettingHelper.h"
+#include "TaskbarVolumeControl.h"
+
+BEGIN_MESSAGE_MAP(CWin11TaskbarDlg, CTaskBarDlg)
+    ON_WM_MOUSEWHEEL()
+END_MESSAGE_MAP()
+
+BOOL CWin11TaskbarDlg::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
+{
+    // Preserve the existing plugin priority: if a plugin item explicitly
+    // consumes the wheel event, system volume must not be changed.
+    if (zDelta >= WHEEL_DELTA || zDelta <= -WHEEL_DELTA)
+    {
+        CPoint point = pt;
+        ScreenToClient(&point);
+        if (CheckClickedItem(point) && m_clicked_item.IsPlugin() && m_clicked_item.PluginItem() != nullptr)
+        {
+            ITMPlugin* plugin = theApp.m_plugins.GetPluginByItem(m_clicked_item.PluginItem());
+            if (plugin != nullptr && plugin->GetAPIVersion() >= 3)
+            {
+                const IPluginItem::MouseEventType type = zDelta > 0 ? IPluginItem::MT_WHEEL_UP : IPluginItem::MT_WHEEL_DOWN;
+                if (m_clicked_item.PluginItem()->OnMouseEvent(type, point.x, point.y, (void*)GetSafeHwnd(), IPluginItem::MF_TASKBAR_WND) != 0)
+                    return TRUE;
+            }
+        }
+    }
+
+    if (CTaskbarVolumeControl::HandleMouseWheel(zDelta, m_volume_wheel_delta))
+        return TRUE;
+
+    // Equivalent to the original CTaskBarDlg fallback, without dispatching
+    // the plugin wheel event a second time.
+    return CDialogEx::OnMouseWheel(nFlags, zDelta, pt);
+}
 
 void CWin11TaskbarDlg::AdjustTaskbarWndPos(bool force_adjust)
 {
