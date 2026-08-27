@@ -23,8 +23,14 @@ private:
 
     int m_last_width;	//用于检测宽度变化的上一次的宽度
     int m_last_height;	//用于检测高度变化的上一次的高度（用于任务栏在屏幕左侧或右侧时）
+    int m_volume_wheel_delta{}; //高精度滚轮累积量，用于任务栏窗口音量控制
 
     // 通过 CTaskBarDlg 继承
     void CheckTaskbarOnTopOrBottom() override;
+
+    DECLARE_MESSAGE_MAP()
+
+public:
+    afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint pt);
 };
 
