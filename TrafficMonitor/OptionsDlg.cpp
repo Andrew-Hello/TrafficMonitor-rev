@@ -5,6 +5,7 @@
 #include "TrafficMonitor.h"
 #include "OptionsDlg.h"
 #include "afxdialogex.h"
+#include "TaskbarVolumeControl.h"
 
 
 // COptionsDlg 对话框
@@ -32,6 +33,51 @@ void COptionsDlg::DoDataExchange(CDataExchange* pDX)
     DDX_Control(pDX, IDC_TAB1, m_tab);
 }
 
+void COptionsDlg::CreateTaskbarVolumeWheelCheck()
+{
+    CWnd* anchor = m_tab2_dlg.GetDlgItem(IDC_WIN11_SETTINGS_BUTTON);
+    if (anchor == nullptr)
+        return;
+
+    CRect anchor_rect;
+    anchor->GetWindowRect(&anchor_rect);
+    m_tab2_dlg.ScreenToClient(&anchor_rect);
+
+    CRect client_rect;
+    m_tab2_dlg.GetClientRect(&client_rect);
+
+    const int margin = theApp.DPI(6);
+    CRect check_rect(anchor_rect.right + margin,
+                     anchor_rect.top,
+                     client_rect.right - theApp.DPI(12),
+                     anchor_rect.bottom);
+
+    CString text;
+    const std::wstring& language = theApp.m_str_table.GetLanguageInfo().bcp_47;
+    if (language == L"zh-CN")
+        text = L"鼠标滚轮调节系统音量";
+    else if (language == L"zh-TW")
+        text = L"滑鼠滾輪調整系統音量";
+    else
+        text = L"Mouse wheel controls system volume";
+
+    if (m_taskbar_volume_wheel_check.Create(text,
+        WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_AUTOCHECKBOX,
+        check_rect,
+        &m_tab2_dlg,
+        IDC_TASKBAR_VOLUME_WHEEL_DYNAMIC))
+    {
+        m_taskbar_volume_wheel_check.SetFont(m_tab2_dlg.GetFont());
+        m_taskbar_volume_wheel_check.SetCheck(CTaskbarVolumeControl::IsEnabled() ? BST_CHECKED : BST_UNCHECKED);
+    }
+}
+
+void COptionsDlg::SaveTaskbarVolumeWheelSetting()
+{
+    if (::IsWindow(m_taskbar_volume_wheel_check.GetSafeHwnd()))
+        CTaskbarVolumeControl::SetEnabled(m_taskbar_volume_wheel_check.GetCheck() == BST_CHECKED);
+}
+
 
 BEGIN_MESSAGE_MAP(COptionsDlg, CBaseDialog)
     ON_WM_SIZE()
@@ -53,6 +99,7 @@ BOOL COptionsDlg::OnInitDialog()
     m_tab1_dlg.Create(IDD_MAIN_WND_SETTINGS_DIALOG, &m_tab);
     m_tab2_dlg.Create(IDD_TASKBAR_SETTINGS_DIALOG, &m_tab);
     m_tab3_dlg.Create(IDD_GENERAL_SETTINGS_DIALOG, &m_tab);
+    CreateTaskbarVolumeWheelCheck();
 
     //保存子对话框
     m_tab_vect.push_back(&m_tab1_dlg);
@@ -103,6 +150,7 @@ BOOL COptionsDlg::OnInitDialog()
 void COptionsDlg::OnOK()
 {
     // TODO: 在此添加专用代码和/或调用基类
+    SaveTaskbarVolumeWheelSetting();
     m_tab1_dlg.OnOK();
     m_tab2_dlg.OnOK();
     m_tab3_dlg.OnOK();
@@ -138,6 +186,7 @@ void COptionsDlg::OnCancel()
 
 void COptionsDlg::OnBnClickedApplyButton()
 {
+    SaveTaskbarVolumeWheelSetting();
     m_tab2_dlg.SaveColorSettingToDefaultStyle();
     ::SendMessage(theApp.m_pMainWnd->GetSafeHwnd(), WM_SETTINGS_APPLIED, (WPARAM)this, 0);
     for (size_t i = 0; i < m_tab_vect.size(); i++)
