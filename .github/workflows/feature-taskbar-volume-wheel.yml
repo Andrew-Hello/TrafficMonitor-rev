@@ -16,9 +16,9 @@ jobs:
           - platform: x64
             artifact: TrafficMonitor-volume-wheel-x64
             output: 'Bin/x64/Release (lite)'
-          - platform: Win32
+          - platform: x86
             artifact: TrafficMonitor-volume-wheel-x86
-            output: 'Bin/Win32/Release (lite)'
+            output: 'Bin/Release (lite)'
           - platform: ARM64EC
             artifact: TrafficMonitor-volume-wheel-ARM64EC
             output: 'Bin/ARM64EC/Release (lite)'
