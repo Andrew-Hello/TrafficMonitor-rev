@@ -219,15 +219,11 @@ private:
         }
 
         // Convert from the authoritative screen-space rectangles to the
-        // current taskbar parent only at the last moment. This avoids stale
-        // offsets when Explorer moves containers or DPI changes.
+        // current taskbar parent only at the last moment. MapWindowPoints can
+        // validly return zero when no translation is needed, so its return
+        // value must not be treated as a failure signal here.
         POINT origin{screen_rect.left, screen_rect.top};
-        if (::MapWindowPoints(HWND_DESKTOP, m_parent_hwnd, &origin, 1) == 0 &&
-            ::GetLastError() != ERROR_SUCCESS)
-        {
-            ::ShowWindow(hwnd, SW_HIDE);
-            return;
-        }
+        ::MapWindowPoints(HWND_DESKTOP, m_parent_hwnd, &origin, 1);
 
         ::SetWindowPos(
             hwnd,
