@@ -1,6 +1,5 @@
 ﻿#pragma once
 #include "TaskBarDlg.h"
-#include "TaskbarInteractionGutters.h"
 class CClassicalTaskbarDlg :
     public CTaskBarDlg
 {
@@ -25,7 +24,6 @@ private:
     int m_last_width;	//用于检测宽度变化的上一次的宽度
     int m_last_height;	//用于检测高度变化的上一次的高度（用于任务栏在屏幕左侧或右侧时）
     int m_volume_wheel_delta{}; //高精度滚轮累积量，用于任务栏窗口音量控制
-    CTaskbarInteractionGutters m_interaction_gutters; //扩展到任务栏空白边缘的透明鼠标命中区域
 
     // 通过 CTaskBarDlg 继承
     void CheckTaskbarOnTopOrBottom() override;
