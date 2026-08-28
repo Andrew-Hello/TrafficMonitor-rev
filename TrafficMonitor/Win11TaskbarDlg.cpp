@@ -2,6 +2,7 @@
 #include "Win11TaskbarDlg.h"
 #include "WindowsSettingHelper.h"
 #include "TaskbarVolumeControl.h"
+#include "TaskbarRawInputGutter.h"
 
 BEGIN_MESSAGE_MAP(CWin11TaskbarDlg, CTaskBarDlg)
     ON_WM_MOUSEWHEEL()
@@ -38,10 +39,7 @@ BOOL CWin11TaskbarDlg::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
 
 void CWin11TaskbarDlg::OnDestroy()
 {
-    // The gutters are siblings of the TrafficMonitor taskbar HWND rather than
-    // its children, so explicitly remove them whenever the real window is
-    // destroyed/recreated.
-    m_interaction_gutters.Destroy();
+    CTaskbarRawInputGutter::UnregisterTarget(GetSafeHwnd());
     CTaskBarDlg::OnDestroy();
 }
 
@@ -128,11 +126,11 @@ void CWin11TaskbarDlg::AdjustTaskbarWndPos(bool force_adjust)
         MoveWindow(m_rect);
     }
 
-    // Bind to the real HWND after every positioning pass, even when Explorer
-    // decided the main window did not need to move this time. GetWindowRect()
-    // inside Sync() is authoritative, so icon-count and DPI driven movement is
-    // reflected immediately without reusing cached m_rect coordinates.
-    m_interaction_gutters.Sync(m_hTaskbar, GetSafeHwnd(), true);
+    // Register/update only HWND identities here. The Raw Input gutter manager
+    // resolves the actual TrafficMonitor/taskbar rectangles afresh for every
+    // relevant mouse event, so icon-count and DPI driven movement never depend
+    // on cached coordinates from this positioning pass.
+    CTaskbarRawInputGutter::RegisterTarget(m_hTaskbar, GetSafeHwnd(), true);
 }
 
 void CWin11TaskbarDlg::InitTaskbarWnd()
