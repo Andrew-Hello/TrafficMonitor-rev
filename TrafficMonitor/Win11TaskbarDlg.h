@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "TaskBarDlg.h"
+#include "TaskbarInteractionGutters.h"
 class CWin11TaskbarDlg :
     public CTaskBarDlg
 {
@@ -19,6 +20,7 @@ private:
     int m_last_notify_width{};
     int m_last_start_pos{};
     int m_volume_wheel_delta{}; //高精度滚轮累积量，用于任务栏窗口音量控制
+    CTaskbarInteractionGutters m_interaction_gutters; //扩展到任务栏上下空白区的透明鼠标命中区域
 
     // 通过 CTaskBarDlg 继承
     void CheckTaskbarOnTopOrBottom() override;
@@ -27,6 +29,7 @@ private:
 
 public:
     afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint pt);
+    afx_msg void OnDestroy();
 
 };
 
