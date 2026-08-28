@@ -2,9 +2,11 @@
 #include "Win11TaskbarDlg.h"
 #include "WindowsSettingHelper.h"
 #include "TaskbarVolumeControl.h"
+#include "TaskbarRawInputGutter.h"
 
 BEGIN_MESSAGE_MAP(CWin11TaskbarDlg, CTaskBarDlg)
     ON_WM_MOUSEWHEEL()
+    ON_WM_DESTROY()
 END_MESSAGE_MAP()
 
 BOOL CWin11TaskbarDlg::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
@@ -33,6 +35,12 @@ BOOL CWin11TaskbarDlg::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
     // Equivalent to the original CTaskBarDlg fallback, without dispatching
     // the plugin wheel event a second time.
     return CDialogEx::OnMouseWheel(nFlags, zDelta, pt);
+}
+
+void CWin11TaskbarDlg::OnDestroy()
+{
+    CTaskbarRawInputGutter::UnregisterTarget(GetSafeHwnd());
+    CTaskBarDlg::OnDestroy();
 }
 
 void CWin11TaskbarDlg::AdjustTaskbarWndPos(bool force_adjust)
@@ -117,6 +125,12 @@ void CWin11TaskbarDlg::AdjustTaskbarWndPos(bool force_adjust)
 
         MoveWindow(m_rect);
     }
+
+    // Register/update only HWND identities here. The Raw Input gutter manager
+    // resolves the actual TrafficMonitor/taskbar rectangles afresh for every
+    // relevant mouse event, so icon-count and DPI driven movement never depend
+    // on cached coordinates from this positioning pass.
+    CTaskbarRawInputGutter::RegisterTarget(m_hTaskbar, GetSafeHwnd(), true);
 }
 
 void CWin11TaskbarDlg::InitTaskbarWnd()

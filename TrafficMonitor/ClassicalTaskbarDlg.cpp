@@ -1,9 +1,11 @@
 ﻿#include "stdafx.h"
 #include "ClassicalTaskbarDlg.h"
 #include "TaskbarVolumeControl.h"
+#include "TaskbarRawInputGutter.h"
 
 BEGIN_MESSAGE_MAP(CClassicalTaskbarDlg, CTaskBarDlg)
     ON_WM_MOUSEWHEEL()
+    ON_WM_DESTROY()
 END_MESSAGE_MAP()
 
 BOOL CClassicalTaskbarDlg::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
@@ -32,6 +34,12 @@ BOOL CClassicalTaskbarDlg::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
     // Equivalent to the original CTaskBarDlg fallback, without dispatching
     // the plugin wheel event a second time.
     return CDialogEx::OnMouseWheel(nFlags, zDelta, pt);
+}
+
+void CClassicalTaskbarDlg::OnDestroy()
+{
+    CTaskbarRawInputGutter::UnregisterTarget(GetSafeHwnd());
+    CTaskBarDlg::OnDestroy();
 }
 
 void CClassicalTaskbarDlg::AdjustTaskbarWndPos(bool force_adjust)
@@ -98,6 +106,14 @@ void CClassicalTaskbarDlg::AdjustTaskbarWndPos(bool force_adjust)
             MoveWindow(m_rect);
         }
     }
+
+    // Only HWND identities are retained. Geometry is read from the actual
+    // windows for every relevant raw mouse event, so taskbar movement, DPI,
+    // orientation and width changes stay bound without stale coordinates.
+    CTaskbarRawInputGutter::RegisterTarget(
+        m_hTaskbar,
+        GetSafeHwnd(),
+        m_taskbar_on_top_or_bottom);
 }
 
 void CClassicalTaskbarDlg::InitTaskbarWnd()
