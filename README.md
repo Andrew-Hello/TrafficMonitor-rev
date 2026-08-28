@@ -22,14 +22,21 @@ Lite 版无需管理员权限即可正常运行，推荐日常使用时保持普
 
 ### 任务栏鼠标滚轮调节系统音量
 
-当鼠标指针位于 **TrafficMonitor 自己的任务栏显示窗口** 上时，可使用鼠标滚轮直接调节 Windows 系统音量。
+当鼠标指针位于 **TrafficMonitor 的任务栏显示区域** 时，可使用鼠标滚轮直接调节 Windows 系统音量。
+
+除可见的 TrafficMonitor 窗口本身外，本分支还将它在任务栏中的同宽上下余量纳入交互区域。这样即使用户习惯将鼠标直接甩到屏幕底边，只要横向位置仍对应 TrafficMonitor，滚轮调节音量和任务栏双击动作仍可正常触发。
 
 特点：
 
 - 功能默认关闭，可在任务栏相关设置中启用“鼠标滚轮调节系统音量”。
-- 仅 TrafficMonitor 自己的任务栏窗口响应，不监听任务栏其它区域。
+- 交互范围仅限 TrafficMonitor 当前实际宽度对应的任务栏区域，不扩展到左右相邻图标或通知区。
+- 可见 TrafficMonitor 窗口尺寸和绘制布局保持不变，不会为了扩大鼠标命中区域而拉伸任务栏窗口。
+- 任务栏上下余量中的双击会复用 TrafficMonitor 原有的任务栏双击动作。
 - 不使用全局鼠标 Hook，不向 Explorer 注入代码，不修改系统进程。
-- 保留插件优先级：插件项目如果主动消费滚轮事件，则不会同时改变系统音量。
+- 使用 Windows Raw Input 观察鼠标事件，仅在光标确实位于 TrafficMonitor 对应的任务栏余量区域时执行补充交互。
+- 每次相关鼠标事件都会重新读取 TrafficMonitor HWND 与任务栏 HWND 的实际屏幕坐标，不依赖缓存位置，因此可跟随任务栏图标数量、窗口宽度、DPI、任务栏尺寸和显示器变化产生的位移。
+- 使用 `WindowFromPoint` 确认当前光标下方实际仍属于任务栏层级，避免其它窗口覆盖任务栏时误触发。
+- 保留插件优先级：在可见 TrafficMonitor 窗口内，插件项目如果主动消费滚轮事件，则不会同时改变系统音量。
 - 支持高精度滚轮/触控板滚轮增量累计，避免小增量输入丢失。
 - 使用 Windows 原生 `WM_APPCOMMAND` / `APPCOMMAND_VOLUME_UP` / `APPCOMMAND_VOLUME_DOWN` 路径，不依赖 `SendInput` 模拟键盘输入。
 - 因此 TrafficMonitor 以普通权限运行时，即使当前前台窗口是管理员权限程序（例如提升权限的任务管理器），仍可正常调节系统音量。
@@ -69,9 +76,11 @@ Lite 版无需管理员权限即可正常运行，推荐日常使用时保持普
 
 ## 任务栏音量控制的设计原则
 
-这一功能刻意保持低侵入：滚轮消息只由 TrafficMonitor 自己已经存在的任务栏窗口处理，不扩展到 Windows 系统任务栏区域，也不为了实现类似第三方任务栏增强工具的全局行为而注入 Explorer。
+这一功能刻意保持低侵入。可见 TrafficMonitor 任务栏窗口仍按原有尺寸和方式嵌入任务栏；对于它上下少量未覆盖的任务栏余量，只使用 Raw Input 作为输入观察来源，再根据当前真实 HWND 坐标进行严格的区域判断。程序不会创建覆盖 Explorer 的透明交互层，也不会通过全局鼠标 Hook 或代码注入改变系统任务栏行为。
 
-音量调整通过 Windows Shell 的应用命令机制完成。相比通过 `SendInput` 模拟 `VK_VOLUME_UP` / `VK_VOLUME_DOWN`，该实现不会因为普通权限 TrafficMonitor 与高完整性级别前台窗口之间的 UIPI 限制而失效。
+Raw Input 使用消息窗口接收原始鼠标通知，但这些通知本身不会被拦截或屏蔽。只有当光标位于当前任务栏内、横向位置严格落在 TrafficMonitor 当前实际宽度之内、并且位于可见 TrafficMonitor HWND 之外的任务栏余量时，程序才补充执行相应交互。
+
+音量调整最终仍通过 Windows Shell 的应用命令机制完成。相比通过 `SendInput` 模拟 `VK_VOLUME_UP` / `VK_VOLUME_DOWN`，该实现不会因为普通权限 TrafficMonitor 与高完整性级别前台窗口之间的 UIPI 限制而失效。
 
 ## 版本说明
 
