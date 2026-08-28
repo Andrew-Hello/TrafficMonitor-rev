@@ -4,6 +4,7 @@
 
 BEGIN_MESSAGE_MAP(CClassicalTaskbarDlg, CTaskBarDlg)
     ON_WM_MOUSEWHEEL()
+    ON_WM_DESTROY()
 END_MESSAGE_MAP()
 
 BOOL CClassicalTaskbarDlg::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
@@ -32,6 +33,14 @@ BOOL CClassicalTaskbarDlg::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
     // Equivalent to the original CTaskBarDlg fallback, without dispatching
     // the plugin wheel event a second time.
     return CDialogEx::OnMouseWheel(nFlags, zDelta, pt);
+}
+
+void CClassicalTaskbarDlg::OnDestroy()
+{
+    // The gutters are siblings of the real TrafficMonitor taskbar HWND rather
+    // than children of it, so remove them before the main taskbar window dies.
+    m_interaction_gutters.Destroy();
+    CTaskBarDlg::OnDestroy();
 }
 
 void CClassicalTaskbarDlg::AdjustTaskbarWndPos(bool force_adjust)
@@ -98,6 +107,11 @@ void CClassicalTaskbarDlg::AdjustTaskbarWndPos(bool force_adjust)
             MoveWindow(m_rect);
         }
     }
+
+    // Derive the interaction area from the actual, current TrafficMonitor HWND
+    // after every taskbar positioning pass. This keeps it locked to icon-count,
+    // DPI and taskbar-orientation driven movement without trusting cached m_rect.
+    m_interaction_gutters.Sync(m_hTaskbar, GetSafeHwnd(), m_taskbar_on_top_or_bottom);
 }
 
 void CClassicalTaskbarDlg::InitTaskbarWnd()
